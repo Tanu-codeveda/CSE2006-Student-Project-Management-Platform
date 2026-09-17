@@ -226,7 +226,7 @@ c:\CoVe
 ## 16. Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Tanu-codeveda/CoVe-Student-Project-Platform.git
+   git clone https://github.com/Tanu-codeveda/CSE2006-Student-Project-Management-Platform.git
    cd CoVe
    ```
 2. Ensure Java 17 is recognized:
