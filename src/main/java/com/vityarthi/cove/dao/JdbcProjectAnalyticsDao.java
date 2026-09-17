@@ -49,7 +49,7 @@ public class JdbcProjectAnalyticsDao {
             while (rs.next()) {
                 Map<String, Object> row = new LinkedHashMap<>();
                 for (int i = 1; i <= columnCount; i++) {
-                    row.put(meta.getColumnLabel(i), rs.getObject(i));
+                    row.put(meta.getColumnLabel(i).toLowerCase(), rs.getObject(i));
                 }
                 results.add(row);
             }
@@ -86,7 +86,7 @@ public class JdbcProjectAnalyticsDao {
             while (rs.next()) {
                 Map<String, Object> record = new LinkedHashMap<>();
                 for (int i = 1; i <= colCount; i++) {
-                    record.put(metaData.getColumnLabel(i), rs.getObject(i));
+                    record.put(metaData.getColumnLabel(i).toLowerCase(), rs.getObject(i));
                 }
                 long total = ((Number) record.getOrDefault("total_tasks", 0)).longValue();
                 long completed = ((Number) record.getOrDefault("completed_tasks", 0)).longValue();
