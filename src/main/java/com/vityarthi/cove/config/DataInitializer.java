@@ -96,36 +96,36 @@ public class DataInitializer implements CommandLineRunner {
             Student s4 = new Student("Sneha Verma", "sneha.verma@vitbhopal.ac.in", "student123", "22BCE2011", "Computer Science & Engineering", 2, "Database architect with strong knowledge of SQL query optimization.");
             Student s5 = new Student("Amit Kumar", "amit.kumar@vitbhopal.ac.in", "student123", "22BCE2088", "Cybersecurity", 2, "Security researcher with interest in cryptography and secure coding.");
 
+            // Attach skills to students in memory prior to persistence (prevents detached collection cascade duplicates)
+            attachSkill(s1, "Java", ProficiencyLevel.ADVANCED, 2.5);
+            attachSkill(s1, "SQL", ProficiencyLevel.INTERMEDIATE, 2.0);
+            attachSkill(s1, "Spring Boot", ProficiencyLevel.INTERMEDIATE, 1.5);
+            attachSkill(s1, "Docker", ProficiencyLevel.BEGINNER, 1.0);
+
+            attachSkill(s2, "Java", ProficiencyLevel.EXPERT, 3.0);
+            attachSkill(s2, "Spring Boot", ProficiencyLevel.ADVANCED, 2.5);
+            attachSkill(s2, "SQL", ProficiencyLevel.ADVANCED, 2.0);
+            attachSkill(s2, "Cloud Computing", ProficiencyLevel.INTERMEDIATE, 1.5);
+
+            attachSkill(s3, "JavaScript", ProficiencyLevel.EXPERT, 3.0);
+            attachSkill(s3, "React", ProficiencyLevel.ADVANCED, 2.0);
+            attachSkill(s3, "UI/UX Design", ProficiencyLevel.ADVANCED, 2.0);
+            attachSkill(s3, "TypeScript", ProficiencyLevel.INTERMEDIATE, 1.5);
+
+            attachSkill(s4, "SQL", ProficiencyLevel.EXPERT, 3.0);
+            attachSkill(s4, "PostgreSQL", ProficiencyLevel.ADVANCED, 2.0);
+            attachSkill(s4, "Python", ProficiencyLevel.INTERMEDIATE, 1.5);
+
+            attachSkill(s5, "Cybersecurity", ProficiencyLevel.ADVANCED, 2.0);
+            attachSkill(s5, "Cryptography", ProficiencyLevel.INTERMEDIATE, 1.5);
+            attachSkill(s5, "Python", ProficiencyLevel.ADVANCED, 2.0);
+
+            // Persist students with cascaded skills atomically
             s1 = studentRepository.save(s1);
             s2 = studentRepository.save(s2);
             s3 = studentRepository.save(s3);
             s4 = studentRepository.save(s4);
             s5 = studentRepository.save(s5);
-
-            // Assign skills with varying proficiencies
-            assignSkill(s1, "Java", ProficiencyLevel.ADVANCED, 2.5);
-            assignSkill(s1, "SQL", ProficiencyLevel.INTERMEDIATE, 2.0);
-            assignSkill(s1, "Spring Boot", ProficiencyLevel.INTERMEDIATE, 1.5);
-            assignSkill(s1, "Docker", ProficiencyLevel.BEGINNER, 1.0);
-
-            assignSkill(s2, "Java", ProficiencyLevel.EXPERT, 3.0);
-            assignSkill(s2, "Spring Boot", ProficiencyLevel.ADVANCED, 2.5);
-            assignSkill(s2, "SQL", ProficiencyLevel.ADVANCED, 2.0);
-            assignSkill(s2, "Cloud Computing", ProficiencyLevel.INTERMEDIATE, 1.5);
-
-            assignSkill(s3, "JavaScript", ProficiencyLevel.EXPERT, 3.0);
-            assignSkill(s3, "React", ProficiencyLevel.ADVANCED, 2.0);
-            assignSkill(s3, "UI/UX Design", ProficiencyLevel.ADVANCED, 2.0);
-            assignSkill(s3, "TypeScript", ProficiencyLevel.INTERMEDIATE, 1.5);
-
-            assignSkill(s4, "SQL", ProficiencyLevel.EXPERT, 3.0);
-            assignSkill(s4, "PostgreSQL", ProficiencyLevel.ADVANCED, 2.0);
-            assignSkill(s4, "Python", ProficiencyLevel.INTERMEDIATE, 1.5);
-            assignSkill(s4, "Database", ProficiencyLevel.ADVANCED, 2.5);
-
-            assignSkill(s5, "Cybersecurity", ProficiencyLevel.ADVANCED, 2.0);
-            assignSkill(s5, "Cryptography", ProficiencyLevel.INTERMEDIATE, 1.5);
-            assignSkill(s5, "Python", ProficiencyLevel.ADVANCED, 2.0);
 
             // 5. Create Sample Projects
             ProjectRequest p1Req = new ProjectRequest();
@@ -141,13 +141,17 @@ public class DataInitializer implements CommandLineRunner {
                     new ProjectRequest.SkillRequirement("UI/UX Design", ProficiencyLevel.BEGINNER, 0.8)
             ));
             Project proj1 = projectService.createProject(s1.getId(), p1Req);
-            proj1.validateAndSetStatus(ProjectStatus.IN_PROGRESS);
+            proj1.validateAndSetStatus(ProjectStatus.OPEN);
             proj1.setMentor(mentorAshwin);
             proj1 = projectRepository.save(proj1);
 
             // Add Rahul and Priya to the team
             teamManagementService.addMemberToTeam(proj1.getId(), s2.getId(), "Backend Architect");
             teamManagementService.addMemberToTeam(proj1.getId(), s3.getId(), "Frontend Lead");
+
+            // Transition to IN_PROGRESS now that team is actively working
+            proj1.validateAndSetStatus(ProjectStatus.IN_PROGRESS);
+            proj1 = projectRepository.save(proj1);
 
             // Add Milestones to Project 1
             Milestone m1 = new Milestone(proj1, "Requirement Analysis & Scope Specification", "Detailed SRS and syllabus mapping", LocalDate.now().minusWeeks(2), 20.0);
@@ -200,10 +204,9 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void assignSkill(Student student, String skillName, ProficiencyLevel level, double years) {
+    private void attachSkill(Student student, String skillName, ProficiencyLevel level, double years) {
         skillRepository.findByNameIgnoreCase(skillName).ifPresent(skill -> {
             student.addSkill(skill, level, years);
-            studentRepository.save(student);
         });
     }
 }
