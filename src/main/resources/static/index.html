@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoVe - Student Project & Team Management Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            🎓 <span>CoVe</span> | VIT Bhopal
+        </a>
+        <ul class="nav-links">
+            <li><a href="/" class="active">Home</a></li>
+            <li><a href="/projects.html">Browse Projects</a></li>
+            <li><a href="/dashboard.html">Student Dashboard</a></li>
+            <li><a href="/faculty-dashboard.html">Faculty Portal</a></li>
+            <li><a href="/admin-dashboard.html">Admin & JDBC Analytics</a></li>
+        </ul>
+        <div id="navUser" class="nav-user"></div>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="card" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: #fff; padding: 3rem 2rem; border: none;">
+            <span class="badge" style="background: rgba(255,255,255,0.2); color: #fff; margin-bottom: 1rem;">VITyarthi Build Your Own Project | CSE2006</span>
+            <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.75rem;">Student Project & Team Management Platform</h1>
+            <p style="font-size: 1.15rem; max-width: 800px; opacity: 0.95; margin-bottom: 2rem;">
+                A specialized academic collaboration platform solving teammate discovery through <strong>transparent, explainable rule-based skill matching</strong>, 
+                concurrency-safe team formation, multi-phase milestone tracking, and multithreaded deadline monitoring.
+            </p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="/projects.html" class="btn" style="background: #fff; color: #1e40af; font-size: 1rem; padding: 0.75rem 1.5rem;">Explore Projects</a>
+                <a href="/create-project.html" class="btn" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.4); font-size: 1rem; padding: 0.75rem 1.5rem;">+ Create Project</a>
+            </div>
+        </div>
+
+        <!-- Quick Demo Evaluation Bar -->
+        <div class="card" style="background: #f1f5f9; border-left: 4px solid var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h3 style="font-size: 1.05rem; font-weight: 700;">⚡ Instant Evaluator Quick Login</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">One-click authentication to test distinct roles without typing credentials.</p>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button onclick="quickLogin('STUDENT')" class="btn btn-primary btn-sm">Login as Student (Tanu)</button>
+                    <button onclick="quickLogin('FACULTY')" class="btn btn-secondary btn-sm">Login as Faculty (Dr. Ashwin)</button>
+                    <button onclick="quickLogin('ADMIN')" class="btn btn-secondary btn-sm">Login as Administrator</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSE2006 Syllabus Concepts Showcase -->
+        <h2 class="page-title" style="margin-bottom: 1rem;">Defensible CSE2006 Java Syllabus Implementations</h2>
+        <div class="grid-3" style="margin-bottom: 2.5rem;">
+            <div class="card">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
+                <h3 class="card-title" style="margin-bottom: 0.5rem;">Rule-Based Skill Matching</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Uses Method Overloading, Java Collections (Set, Map, PriorityQueue), and explainable breakdown calculation.
+                </p>
+                <span class="badge badge-primary">Units 1, 2 & 4</span>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div>
+                <h3 class="card-title" style="margin-bottom: 0.5rem;">Synchronization & Concurrency</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Synchronized critical sections and thread locks preventing over-subscription when concurrent users claim the final slot.
+                </p>
+                <span class="badge badge-warning">Unit 3 (Race Condition Test)</span>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
+                <h3 class="card-title" style="margin-bottom: 0.5rem;">Multithreaded Daemon</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Dedicated background thread extending <code>Thread</code> class continuously inspecting deadlines without blocking HTTP requests.
+                </p>
+                <span class="badge badge-success">Unit 3 (Thread Lifecycle)</span>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+                <h3 class="card-title" style="margin-bottom: 0.5rem;">Direct JDBC Analytics</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Raw <code>Connection</code>, <code>PreparedStatement</code>, and <code>ResultSetMetaData</code> aggregate queries alongside JPA.
+                </p>
+                <span class="badge badge-primary">Unit 5 & Indicative Exp 14</span>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+                <h3 class="card-title" style="margin-bottom: 0.5rem;">Java I/O Streams Exporters</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Character streams (PrintWriter, BufferedWriter) and Byte streams (ByteArrayOutputStream) for Dossier and CSV downloads.
+                </p>
+                <span class="badge badge-secondary">Unit 4 & Indicative Exp 16</span>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛡️</div>
+                <h3 class="card-title" style="margin-bottom: 0.5rem;">Custom Exception Hierarchy</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Robust custom exceptions (TeamFullException, InvalidProjectStateException) translated via @RestControllerAdvice.
+                </p>
+                <span class="badge badge-danger">Unit 3 & OOP Basics</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p><strong>CoVe: Student Project & Team Management Platform</strong> | CSE2006 Programming in Java | Vellore Institute of Technology (VIT Bhopal)</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

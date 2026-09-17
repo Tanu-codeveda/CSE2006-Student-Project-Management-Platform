@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CoVe Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">🎓 <span>CoVe</span> | VIT Bhopal</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/projects.html">Browse Projects</a></li>
+        </ul>
+        <div id="navUser" class="nav-user"></div>
+    </nav>
+
+    <div class="container" style="max-width: 480px; margin-top: 3rem;">
+        <div class="card">
+            <h2 class="card-title" style="justify-content: center; font-size: 1.5rem; margin-bottom: 0.5rem;">Sign In to CoVe</h2>
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+                Select your university account or use 1-click evaluation login
+            </p>
+
+            <!-- 1-Click Evaluation Login Buttons -->
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem;">
+                <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">Quick Evaluator Login</div>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <button onclick="quickLogin('STUDENT')" class="btn btn-primary btn-sm" style="width: 100%;">Student (Tanu Gowda - 21BCE1001)</button>
+                    <button onclick="quickLogin('FACULTY')" class="btn btn-secondary btn-sm" style="width: 100%;">Faculty Mentor (Dr. M. Ashwin)</button>
+                    <button onclick="quickLogin('ADMIN')" class="btn btn-secondary btn-sm" style="width: 100%;">Administrator (System Admin)</button>
+                </div>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">VIT Email Address</label>
+                    <input type="email" id="email" class="form-control" placeholder="name@vitbhopal.ac.in" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Sign In</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+                Don't have an account? <a href="/register.html" style="color: var(--primary); font-weight: 600;">Register here</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    Auth.setUser(data);
+                    showToast('Welcome back, ' + data.name);
+                    setTimeout(() => window.location.href = data.dashboardUrl, 600);
+                } else {
+                    showToast(data.message || 'Invalid email or password', true);
+                }
+            } catch (err) {
+                showToast('Connection error', true);
+            }
+        });
+    </script>
+</body>
+</html>

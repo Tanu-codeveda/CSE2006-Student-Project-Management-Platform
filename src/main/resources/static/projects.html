@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Projects - CoVe</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">🎓 <span>CoVe</span> | Browse Projects</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/projects.html" class="active">Browse Projects</a></li>
+            <li><a href="/create-project.html">+ Propose Project</a></li>
+            <li><a href="/dashboard.html">My Dashboard</a></li>
+        </ul>
+        <div id="navUser" class="nav-user"></div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Explore Academic Projects</h1>
+                <p class="page-subtitle">Discover open student projects, check required skills, and find teammates.</p>
+            </div>
+            <div>
+                <a href="/create-project.html" class="btn btn-primary">+ Create New Project</a>
+            </div>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="card" style="padding: 1rem;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <input type="text" id="searchInput" class="form-control" style="flex: 1; min-width: 250px;" placeholder="Search by title, description, or tech stack..." oninput="handleSearch()">
+                <select id="statusFilter" class="form-control" style="width: 200px;" onchange="handleSearch()">
+                    <option value="">All Statuses</option>
+                    <option value="OPEN">OPEN (Recruiting)</option>
+                    <option value="TEAM_FORMING">TEAM_FORMING</option>
+                    <option value="IN_PROGRESS">IN_PROGRESS</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div id="projectsContainer" class="grid-2">
+            <p style="color: var(--text-muted);">Loading projects...</p>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        let allProjects = [];
+
+        async function fetchProjects() {
+            try {
+                const res = await fetch('/api/projects');
+                allProjects = await res.json();
+                renderProjects(allProjects);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderProjects(projects) {
+            const container = document.getElementById('projectsContainer');
+            if (!projects || projects.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-muted);">No projects found matching criteria.</div>';
+                return;
+            }
+
+            container.innerHTML = projects.map(p => {
+                const teamSize = p.team ? p.team.members.length : 1;
+                const capacity = p.teamSizeLimit || 4;
+                const skillsHtml = (p.requiredSkills || []).map(s => `
+                    <span class="badge badge-primary" style="font-size: 0.75rem;">${s.skill.name} (${s.minProficiency})</span>
+                `).join(' ');
+
+                return `
+                    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--secondary);">
+                                    <a href="/project-details.html?id=${p.id}" style="color: inherit; text-decoration: none;">${p.title}</a>
+                                </h3>
+                                <span class="badge badge-${p.status}">${p.status}</span>
+                            </div>
+                            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                ${p.description}
+                            </p>
+                            <div style="margin-bottom: 0.75rem;">
+                                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.25rem;">Required Skills:</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                                    ${skillsHtml || '<span style="font-size: 0.8rem; color: var(--text-muted);">None specified</span>'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted);">
+                            <div>
+                                <span>👥 Team: <strong>${teamSize}/${capacity}</strong></span> |
+                                <span>📅 Due: <strong>${p.deadline}</strong></span>
+                            </div>
+                            <a href="/project-details.html?id=${p.id}" class="btn btn-sm btn-primary">Workspace →</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const status = document.getElementById('statusFilter').value;
+
+            const filtered = allProjects.filter(p => {
+                const matchesQuery = !query ||
+                    p.title.toLowerCase().includes(query) ||
+                    p.description.toLowerCase().includes(query) ||
+                    (p.techStack && p.techStack.toLowerCase().includes(query));
+                const matchesStatus = !status || p.status === status;
+                return matchesQuery && matchesStatus;
+            });
+
+            renderProjects(filtered);
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchProjects);
+    </script>
+</body>
+</html>

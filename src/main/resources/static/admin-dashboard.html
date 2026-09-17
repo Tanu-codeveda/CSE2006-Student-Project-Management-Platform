@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin & JDBC Analytics - CoVe</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">🎓 <span>CoVe</span> | Admin Portal</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/projects.html">Browse Projects</a></li>
+            <li><a href="/admin-dashboard.html" class="active">Admin & JDBC Analytics</a></li>
+        </ul>
+        <div id="navUser" class="nav-user"></div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Direct JDBC Analytics & Multithreaded Daemon Console</h1>
+                <p class="page-subtitle">Demonstrates raw JDBC PreparedStatement queries, ResultSetMetaData, and concurrent background thread inspection.</p>
+            </div>
+            <div>
+                <button onclick="refreshAllAnalytics()" class="btn btn-sm btn-primary">🔄 Refresh Metrics</button>
+            </div>
+        </div>
+
+        <!-- Section 1: Multithreaded Background Daemon Live Diagnostics -->
+        <div class="card" style="border-left: 4px solid var(--success);">
+            <div class="card-title">
+                <span>⚡ Multithreaded Daemon Status (CSE2006 Indicative Exp 13)</span>
+                <span id="daemonStatusBadge" class="badge badge-success">RUNNABLE</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Thread <code>DeadlineMonitoringDaemon-Worker</code> extends <code>Thread</code> and runs in the background 
+                auditing task deadlines every 30 seconds without blocking user transactions.
+            </p>
+            <div class="grid-4">
+                <div class="stat-card">
+                    <div class="stat-value" id="diagCycles">0</div>
+                    <div class="stat-label">Audit Cycles Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="diagThreadState">TIMED_WAITING</div>
+                    <div class="stat-label">Thread State</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="diagInterval">30s</div>
+                    <div class="stat-label">Sleep Interval</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="diagAlerts">0</div>
+                    <div class="stat-label">Dispatched Alerts</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Direct JDBC Skill Demand Distribution -->
+        <div class="card">
+            <div class="card-title">
+                <span>📊 Cross-Project Skill Demand (Direct JDBC PreparedStatement)</span>
+                <span class="badge badge-primary">JDBC Query</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Direct SQL query via <code>Connection</code>, <code>PreparedStatement</code>, and <code>ResultSetMetaData</code> 
+                aggregating skill demand across active student projects.
+            </p>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Skill Name</th>
+                            <th>Category</th>
+                            <th>Projects Requesting</th>
+                            <th>Average Importance Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody id="skillDemandBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 3: Direct JDBC Student Workload Report -->
+        <div class="card">
+            <div class="card-title">
+                <span>👥 Student Workload & Performance (Direct JDBC ResultSet)</span>
+                <span class="badge badge-primary">JDBC Report</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Computes task allocation velocity, completed items, overdue risk, and percentage completion rate per student.
+            </p>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Registration Number</th>
+                            <th>Total Tasks</th>
+                            <th>Completed Tasks</th>
+                            <th>Overdue Tasks</th>
+                            <th>Completion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workloadBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        async function refreshAllAnalytics() {
+            await Promise.all([
+                loadDaemonDiagnostics(),
+                loadSkillDemand(),
+                loadWorkloadReport()
+            ]);
+        }
+
+        async function loadDaemonDiagnostics() {
+            try {
+                const res = await fetch('/api/analytics/daemon-diagnostics');
+                const d = await res.json();
+                document.getElementById('diagCycles').textContent = d.cyclesExecuted;
+                document.getElementById('diagThreadState').textContent = d.threadState;
+                document.getElementById('diagAlerts').textContent = d.totalAlertsDispatched;
+                document.getElementById('diagInterval').textContent = (d.checkIntervalMs / 1000) + 's';
+                document.getElementById('daemonStatusBadge').textContent = d.isAlive ? 'ACTIVE (' + d.threadState + ')' : 'STOPPED';
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadSkillDemand() {
+            try {
+                const res = await fetch('/api/analytics/skill-demand');
+                const list = await res.json();
+                const tbody = document.getElementById('skillDemandBody');
+                tbody.innerHTML = list.map(item => `
+                    <tr>
+                        <td><strong>${item.skill_name}</strong></td>
+                        <td><span class="badge badge-secondary">${item.skill_category}</span></td>
+                        <td><strong style="color: var(--primary);">${item.project_count}</strong> projects</td>
+                        <td>${item.avg_weight ? parseFloat(item.avg_weight).toFixed(2) : '1.00'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadWorkloadReport() {
+            try {
+                const res = await fetch('/api/analytics/workload');
+                const list = await res.json();
+                const tbody = document.getElementById('workloadBody');
+                tbody.innerHTML = list.map(row => `
+                    <tr>
+                        <td><strong>${row.student_name}</strong></td>
+                        <td>${row.registration_number}</td>
+                        <td>${row.total_tasks}</td>
+                        <td><span class="badge badge-success">${row.completed_tasks}</span></td>
+                        <td><span class="badge ${row.overdue_tasks > 0 ? 'badge-danger' : 'badge-secondary'}">${row.overdue_tasks}</span></td>
+                        <td><strong>${row.completion_rate_percentage}%</strong></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', refreshAllAnalytics);
+    </script>
+</body>
+</html>

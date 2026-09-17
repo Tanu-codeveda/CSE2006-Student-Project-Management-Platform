@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - CoVe Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">🎓 <span>CoVe</span> | VIT Bhopal</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/projects.html">Browse Projects</a></li>
+        </ul>
+        <div id="navUser" class="nav-user"></div>
+    </nav>
+
+    <div class="container" style="max-width: 580px; margin-top: 2rem;">
+        <div class="card">
+            <h2 class="card-title" style="justify-content: center; font-size: 1.5rem; margin-bottom: 0.5rem;">Join CoVe Platform</h2>
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+                Create your student or faculty academic profile
+            </p>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="role">User Role</label>
+                    <select id="role" class="form-control" onchange="toggleRoleFields(this.value)">
+                        <option value="STUDENT">Student Learner / Contributor</option>
+                        <option value="FACULTY">Project Mentor / Faculty Guide</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" class="form-control" placeholder="e.g. John Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">VIT Email Address</label>
+                    <input type="email" id="email" class="form-control" placeholder="john.doe@vitbhopal.ac.in" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password (min 6 characters)</label>
+                    <input type="password" id="password" class="form-control" minlength="6" placeholder="••••••••" required>
+                </div>
+
+                <!-- Student specific fields -->
+                <div id="studentFields">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="regNo">Registration Number</label>
+                            <input type="text" id="regNo" class="form-control" placeholder="e.g. 21BCE1099">
+                        </div>
+                        <div class="form-group">
+                            <label for="yearOfStudy">Year of Study</label>
+                            <select id="yearOfStudy" class="form-control">
+                                <option value="1">1st Year</option>
+                                <option value="2" selected>2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <input type="text" id="department" class="form-control" value="Computer Science & Engineering">
+                    </div>
+                    <div class="form-group">
+                        <label for="bio">Bio / Interests</label>
+                        <textarea id="bio" class="form-control" rows="2" placeholder="Brief statement on your technical passions and project goals"></textarea>
+                    </div>
+                </div>
+
+                <!-- Faculty specific fields -->
+                <div id="facultyFields" style="display: none;">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="employeeId">Employee ID</label>
+                            <input type="text" id="employeeId" class="form-control" placeholder="e.g. FAC-2024">
+                        </div>
+                        <div class="form-group">
+                            <label for="designation">Designation</label>
+                            <input type="text" id="designation" class="form-control" placeholder="e.g. Assistant Professor">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Create Account</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+                Already registered? <a href="/login.html" style="color: var(--primary); font-weight: 600;">Sign in here</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        function toggleRoleFields(role) {
+            const studentFields = document.getElementById('studentFields');
+            const facultyFields = document.getElementById('facultyFields');
+            if (role === 'FACULTY') {
+                studentFields.style.display = 'none';
+                facultyFields.style.display = 'block';
+            } else {
+                studentFields.style.display = 'block';
+                facultyFields.style.display = 'none';
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const role = document.getElementById('role').value;
+            const payload = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+                role: role,
+                department: document.getElementById('department').value.trim()
+            };
+
+            if (role === 'STUDENT') {
+                payload.registrationNumber = document.getElementById('regNo').value.trim();
+                payload.yearOfStudy = parseInt(document.getElementById('yearOfStudy').value);
+                payload.bio = document.getElementById('bio').value.trim();
+            } else {
+                payload.employeeId = document.getElementById('employeeId').value.trim();
+                payload.designation = document.getElementById('designation').value.trim();
+            }
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    Auth.setUser(data);
+                    showToast('Account created successfully!');
+                    setTimeout(() => window.location.href = data.dashboardUrl, 600);
+                } else {
+                    showToast(data.message || 'Registration failed', true);
+                }
+            } catch (err) {
+                showToast('Network error during registration', true);
+            }
+        });
+    </script>
+</body>
+</html>

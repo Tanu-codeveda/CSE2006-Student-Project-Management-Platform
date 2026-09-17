@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Workspace - CoVe</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">🎓 <span>CoVe</span> | Workspace</a>
+        <ul class="nav-links">
+            <li><a href="/projects.html">← Back to Projects</a></li>
+            <li><a href="/dashboard.html">My Dashboard</a></li>
+        </ul>
+        <div id="navUser" class="nav-user"></div>
+    </nav>
+
+    <div class="container">
+        <!-- Project Title Header -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                <div style="flex: 1; min-width: 300px;">
+                    <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem;">
+                        <span id="projectStatusBadge" class="badge">STATUS</span>
+                        <span id="projectDeadlineBadge" class="badge badge-secondary">Due: Date</span>
+                    </div>
+                    <h1 id="projectTitle" style="font-size: 1.85rem; font-weight: 800; color: var(--secondary); margin-bottom: 0.5rem;">Project Title</h1>
+                    <p id="projectLead" style="font-size: 0.9rem; color: var(--text-muted);"></p>
+                </div>
+
+                <div style="text-align: right; min-width: 220px;">
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Calculated Progress</div>
+                    <div id="progressText" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">0%</div>
+                    <div class="progress-bar-container">
+                        <div id="progressBarFill" class="progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lifecycle State Transition Bar -->
+            <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    Transition State (State Pattern):
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="changeProjectStatus('OPEN')" class="btn btn-sm btn-secondary">Set OPEN</button>
+                    <button onclick="changeProjectStatus('TEAM_FORMING')" class="btn btn-sm btn-secondary">Set TEAM_FORMING</button>
+                    <button onclick="changeProjectStatus('IN_PROGRESS')" class="btn btn-sm btn-secondary">Set IN_PROGRESS</button>
+                    <button onclick="changeProjectStatus('COMPLETED')" class="btn btn-sm btn-success">Set COMPLETED</button>
+                    <button onclick="changeProjectStatus('ARCHIVED')" class="btn btn-sm btn-danger">Archive</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="switchTab('team')">Team (<span id="tabTeamCount">0</span>)</button>
+            <button class="tab-btn" onclick="switchTab('matching')">🎯 Rule-Based Skill Matcher</button>
+            <button class="tab-btn" onclick="switchTab('kanban')">📋 Tasks Board</button>
+            <button class="tab-btn" onclick="switchTab('milestones')">🚩 Milestones</button>
+            <button class="tab-btn" onclick="switchTab('reports')">📄 I/O Reports & Exports</button>
+        </div>
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="card-title">Project Specification</h3>
+                    <p id="projectDesc" style="font-size: 0.95rem; line-height: 1.6; color: var(--text-main); margin-bottom: 1.5rem;"></p>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        <p><strong>Technologies:</strong> <span id="projectTech"></span></p>
+                        <p style="margin-top: 0.25rem;"><strong>Faculty Mentor:</strong> <span id="projectMentor">Not Assigned</span></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Required Competencies</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Used to calculate candidate compatibility scores.
+                    </p>
+                    <div id="overviewSkillsList" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: TEAM ROSTER -->
+        <div id="tab-team" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span>Active Team Roster (<span id="teamCapacity">0/4</span>)</span>
+                    <button onclick="joinCurrentTeam()" class="btn btn-sm btn-primary">Join This Team (Thread-Safe)</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Reg. Number</th>
+                                <th>Role in Team</th>
+                                <th>Enrolled Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: RULE-BASED SKILL MATCHING -->
+        <div id="tab-matching" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span>Candidate Teammates Compatibility (Rule-Based Algorithm)</span>
+                    <button onclick="loadMatchingCandidates()" class="btn btn-sm btn-primary">🔄 Re-run Matcher</button>
+                </div>
+                <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Scores available students based on required skill overlap and proficiency weights.
+                    <strong>Fully deterministic and explainable</strong> (demonstrating CSE2006 Java Collections & Polymorphism).
+                </p>
+                <div id="candidatesList" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <p style="color: var(--text-muted);">Loading candidates...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: KANBAN TASKS -->
+        <div id="tab-kanban" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700;">Task Management Board</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Tasks enforce validated state transitions (TODO → IN_PROGRESS → COMPLETED).</p>
+                </div>
+                <button onclick="openAddTaskModal()" class="btn btn-primary btn-sm">+ Add New Task</button>
+            </div>
+
+            <div class="kanban-board">
+                <!-- TODO -->
+                <div class="kanban-col">
+                    <div class="kanban-col-header">
+                        <span>TODO</span>
+                        <span id="colTodoCount" class="badge badge-secondary">0</span>
+                    </div>
+                    <div id="kanban-TODO"></div>
+                </div>
+
+                <!-- IN_PROGRESS -->
+                <div class="kanban-col">
+                    <div class="kanban-col-header">
+                        <span>IN PROGRESS</span>
+                        <span id="colInProgressCount" class="badge badge-primary">0</span>
+                    </div>
+                    <div id="kanban-IN_PROGRESS"></div>
+                </div>
+
+                <!-- BLOCKED -->
+                <div class="kanban-col">
+                    <div class="kanban-col-header">
+                        <span>BLOCKED</span>
+                        <span id="colBlockedCount" class="badge badge-danger">0</span>
+                    </div>
+                    <div id="kanban-BLOCKED"></div>
+                </div>
+
+                <!-- COMPLETED -->
+                <div class="kanban-col">
+                    <div class="kanban-col-header">
+                        <span>COMPLETED</span>
+                        <span id="colCompletedCount" class="badge badge-success">0</span>
+                    </div>
+                    <div id="kanban-COMPLETED"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: MILESTONES -->
+        <div id="tab-milestones" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span>Academic Milestones Roadmap</span>
+                    <button onclick="openAddMilestoneModal()" class="btn btn-sm btn-primary">+ Add Milestone</button>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Checking off milestones dynamically updates the overall mathematical project progress.
+                </p>
+                <div id="milestonesContainer" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+            </div>
+        </div>
+
+        <!-- TAB 6: REPORTS & EXPORTS -->
+        <div id="tab-reports" class="tab-content">
+            <div class="card">
+                <h3 class="card-title">Academic I/O Stream Export Center</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    Exports generated directly via Java Character Streams (<code>PrintWriter</code>, <code>BufferedWriter</code>) 
+                    and Byte Streams (<code>ByteArrayOutputStream</code>, <code>BufferedOutputStream</code>).
+                </p>
+
+                <div class="grid-3">
+                    <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📄</div>
+                        <h4 style="font-weight: 700; margin-bottom: 0.5rem;">Project Dossier (TXT)</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+                            Formatted ASCII/Markdown dossier generated via Character Streams.
+                        </p>
+                        <a id="downloadDossierBtn" href="#" class="btn btn-primary btn-sm" download>Download Dossier</a>
+                    </div>
+
+                    <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
+                        <h4 style="font-weight: 700; margin-bottom: 0.5rem;">Task List (CSV)</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+                            Complete task inventory with assignees, priorities, and statuses.
+                        </p>
+                        <a id="downloadTasksCsvBtn" href="#" class="btn btn-secondary btn-sm" download>Export Tasks CSV</a>
+                    </div>
+
+                    <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👥</div>
+                        <h4 style="font-weight: 700; margin-bottom: 0.5rem;">Team Roster (CSV)</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+                            Member registration numbers, roles, and join timestamps.
+                        </p>
+                        <a id="downloadTeamCsvBtn" href="#" class="btn btn-secondary btn-sm" download>Export Team CSV</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Task -->
+    <div id="taskModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 1rem;">Create Project Task</h3>
+            <div class="form-group">
+                <label for="taskTitle">Task Title</label>
+                <input type="text" id="taskTitle" class="form-control" placeholder="e.g. Implement Raft Log Replication" required>
+            </div>
+            <div class="form-group">
+                <label for="taskDesc">Description</label>
+                <textarea id="taskDesc" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="taskAssignee">Assignee</label>
+                    <select id="taskAssignee" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label for="taskPriority">Priority</label>
+                    <select id="taskPriority" class="form-control">
+                        <option value="LOW">LOW</option>
+                        <option value="MEDIUM" selected>MEDIUM</option>
+                        <option value="HIGH">HIGH</option>
+                        <option value="CRITICAL">CRITICAL</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="taskDeadline">Deadline</label>
+                <input type="date" id="taskDeadline" class="form-control" required>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button onclick="closeAddTaskModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="submitAddTask()" class="btn btn-primary">Create Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Milestone -->
+    <div id="milestoneModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 1rem;">Add Academic Milestone</h3>
+            <div class="form-group">
+                <label for="milestoneTitle">Milestone Title</label>
+                <input type="text" id="milestoneTitle" class="form-control" placeholder="e.g. Mid-Term System Design Evaluation" required>
+            </div>
+            <div class="form-group">
+                <label for="milestoneDesc">Description</label>
+                <textarea id="milestoneDesc" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="milestoneDeadline">Target Deadline</label>
+                    <input type="date" id="milestoneDeadline" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="milestoneWeight">Weight %</label>
+                    <input type="number" id="milestoneWeight" class="form-control" value="25" min="5" max="100">
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button onclick="closeAddMilestoneModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="submitAddMilestone()" class="btn btn-primary">Save Milestone</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('id') || 1;
+        let currentProject = null;
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const content = document.getElementById('tab-' + tabId);
+            if (content) content.classList.add('active');
+
+            if (tabId === 'matching') loadMatchingCandidates();
+        }
+
+        async function loadProject() {
+            try {
+                const res = await fetch(`/api/projects/${projectId}`);
+                if (!res.ok) {
+                    showToast('Project not found', true);
+                    return;
+                }
+                currentProject = await res.json();
+                renderProjectHeader();
+                renderOverview();
+                renderTeam();
+                renderKanban();
+                renderMilestones();
+                setupExportLinks();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderProjectHeader() {
+            document.getElementById('projectTitle').textContent = currentProject.title;
+            const statusBadge = document.getElementById('projectStatusBadge');
+            statusBadge.textContent = currentProject.status;
+            statusBadge.className = `badge badge-${currentProject.status}`;
+            document.getElementById('projectDeadlineBadge').textContent = `Due: ${currentProject.deadline}`;
+            document.getElementById('projectLead').textContent = `Project Lead: ${currentProject.owner.name} (${currentProject.owner.registrationNumber})`;
+
+            const progress = currentProject.progressPercentage || 0;
+            document.getElementById('progressText').textContent = `${progress}%`;
+            document.getElementById('progressBarFill').style.width = `${progress}%`;
+        }
+
+        function renderOverview() {
+            document.getElementById('projectDesc').textContent = currentProject.description;
+            document.getElementById('projectTech').textContent = currentProject.techStack || 'Not specified';
+            document.getElementById('projectMentor').textContent = currentProject.mentor ? `${currentProject.mentor.name} (${currentProject.mentor.designation})` : 'Pending faculty guide allocation';
+
+            const skillsEl = document.getElementById('overviewSkillsList');
+            skillsEl.innerHTML = (currentProject.requiredSkills || []).map(s => `
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem;">
+                    <strong>${s.skill.name}</strong>
+                    <span class="badge badge-primary">Min: ${s.minProficiency} (wt: ${s.weight})</span>
+                </div>
+            `).join('') || '<p style="color: var(--text-muted);">No required skills specified.</p>';
+        }
+
+        function renderTeam() {
+            const members = currentProject.team ? currentProject.team.members : [];
+            document.getElementById('tabTeamCount').textContent = members.length;
+            document.getElementById('teamCapacity').textContent = `${members.length}/${currentProject.teamSizeLimit}`;
+
+            const tbody = document.getElementById('teamTableBody');
+            tbody.innerHTML = members.map(m => `
+                <tr>
+                    <td><strong>${m.student.name}</strong></td>
+                    <td>${m.student.registrationNumber}</td>
+                    <td><span class="badge badge-secondary">${m.roleInTeam}</span></td>
+                    <td>${m.joinedAt.split('T')[0]}</td>
+                    <td>
+                        <button onclick="removeMember(${m.student.id})" class="btn btn-sm btn-danger">Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function joinCurrentTeam() {
+            const user = Auth.requireAuth();
+            if (!user) return;
+
+            try {
+                const res = await fetch(`/api/projects/${projectId}/team/join?studentId=${user.id}&roleInTeam=Developer`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Successfully enrolled in team!');
+                    loadProject();
+                } else {
+                    showToast(data.message || 'Could not join team', true);
+                }
+            } catch (e) {
+                showToast('Network error during team join', true);
+            }
+        }
+
+        async function removeMember(studentId) {
+            if (!confirm('Are you sure you want to remove this member?')) return;
+            try {
+                const res = await fetch(`/api/projects/${projectId}/team/members/${studentId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('Member removed');
+                    loadProject();
+                }
+            } catch (e) {
+                showToast('Error removing member', true);
+            }
+        }
+
+        async function changeProjectStatus(newStatus) {
+            const user = Auth.requireAuth();
+            if (!user) return;
+
+            try {
+                const res = await fetch(`/api/projects/${projectId}/status?userId=${user.id}&status=${newStatus}`, {
+                    method: 'PUT'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`Status updated to ${newStatus}`);
+                    loadProject();
+                } else {
+                    showToast(data.message || 'Illegal state transition', true);
+                }
+            } catch (e) {
+                showToast('Error changing state', true);
+            }
+        }
+
+        // Rule-Based Matching
+        async function loadMatchingCandidates() {
+            const container = document.getElementById('candidatesList');
+            container.innerHTML = '<p style="color: var(--text-muted);">Running rule-based matching calculation...</p>';
+
+            try {
+                const res = await fetch(`/api/projects/${projectId}/matches`);
+                const candidates = await res.json();
+
+                if (!candidates || candidates.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-muted);">No candidate students found.</p>';
+                    return;
+                }
+
+                container.innerHTML = candidates.map(c => `
+                    <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; background: #fff;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div>
+                                <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--secondary);">${c.studentName} (${c.registrationNumber})</h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted);">${c.department} | Year ${c.yearOfStudy}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: ${c.matchPercentage >= 70 ? 'var(--success)' : 'var(--primary)'};">
+                                    ${c.matchPercentage}%
+                                </div>
+                                <span class="badge badge-${c.compatibilityTier === 'PERFECT_MATCH' ? 'success' : (c.compatibilityTier === 'STRONG_MATCH' ? 'primary' : 'warning')}">
+                                    ${c.compatibilityTier}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Explainability Reason -->
+                        <div style="background: #f8fafc; border-left: 3px solid var(--primary); padding: 0.5rem 0.75rem; margin: 0.5rem 0; font-size: 0.85rem;">
+                            <strong>Evaluation:</strong> ${c.explanation}
+                        </div>
+
+                        <!-- Transparent Breakdown Checklist -->
+                        <div style="margin-top: 0.75rem;">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">Skill-by-Skill Audit:</div>
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                                ${c.skillBreakdown.map(b => `
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.25rem 0; border-bottom: 1px dashed var(--border);">
+                                        <span><strong>${b.skillName}</strong> (Required: ${b.requiredProficiency}, Candidate: ${b.studentProficiency})</span>
+                                        <span class="badge ${b.statusBadge.includes('MATCH') ? 'badge-success' : (b.statusBadge.includes('PARTIAL') ? 'badge-warning' : 'badge-danger')}">
+                                            ${b.statusBadge}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1rem; text-align: right;">
+                            <button onclick="inviteCandidate(${c.studentId})" class="btn btn-sm btn-primary">+ Add to Team</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function inviteCandidate(studentId) {
+            try {
+                const res = await fetch(`/api/projects/${projectId}/team/join?studentId=${studentId}&roleInTeam=Contributor`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Candidate successfully added to team!');
+                    loadProject();
+                    loadMatchingCandidates();
+                } else {
+                    showToast(data.message || 'Could not add member', true);
+                }
+            } catch (e) {
+                showToast('Error adding candidate', true);
+            }
+        }
+
+        // Kanban Board
+        function renderKanban() {
+            const tasks = currentProject.tasks || [];
+            const cols = ['TODO', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED'];
+            cols.forEach(c => {
+                const colEl = document.getElementById(`kanban-${c}`);
+                colEl.innerHTML = '';
+            });
+
+            const counts = { TODO: 0, IN_PROGRESS: 0, BLOCKED: 0, COMPLETED: 0 };
+
+            tasks.forEach(t => {
+                counts[t.status] = (counts[t.status] || 0) + 1;
+                const colEl = document.getElementById(`kanban-${t.status}`);
+                if (!colEl) return;
+
+                const card = document.createElement('div');
+                card.className = 'kanban-card';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <h4>${t.title}</h4>
+                        <span class="badge ${t.priority === 'CRITICAL' ? 'badge-danger' : (t.priority === 'HIGH' ? 'badge-warning' : 'badge-secondary')}">${t.priority}</span>
+                    </div>
+                    <p>${t.description || ''}</p>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                        <div>Assignee: <strong>${t.assignee ? t.assignee.name : 'Unassigned'}</strong></div>
+                        <div>Due: ${t.deadline}</div>
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; justify-content: flex-end;">
+                        ${t.status !== 'TODO' ? `<button onclick="moveTask(${t.id}, 'TODO')" class="btn btn-sm btn-secondary">TODO</button>` : ''}
+                        ${t.status !== 'IN_PROGRESS' ? `<button onclick="moveTask(${t.id}, 'IN_PROGRESS')" class="btn btn-sm btn-secondary">In Prog</button>` : ''}
+                        ${t.status !== 'BLOCKED' ? `<button onclick="moveTask(${t.id}, 'BLOCKED')" class="btn btn-sm btn-danger">Block</button>` : ''}
+                        ${t.status !== 'COMPLETED' ? `<button onclick="moveTask(${t.id}, 'COMPLETED')" class="btn btn-sm btn-success">Done ✓</button>` : ''}
+                    </div>
+                `;
+                colEl.appendChild(card);
+            });
+
+            cols.forEach(c => {
+                const countBadge = document.getElementById(`col${c.replace('_','')}Count`);
+                if (countBadge) countBadge.textContent = counts[c] || 0;
+            });
+        }
+
+        async function moveTask(taskId, newStatus) {
+            const user = Auth.requireAuth();
+            if (!user) return;
+            try {
+                const res = await fetch(`/api/tasks/${taskId}/status?userId=${user.id}&status=${newStatus}`, { method: 'PUT' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`Task moved to ${newStatus}`);
+                    loadProject();
+                } else {
+                    showToast(data.message || 'Illegal task transition', true);
+                }
+            } catch (e) {
+                showToast('Error moving task', true);
+            }
+        }
+
+        // Milestones
+        function renderMilestones() {
+            const milestones = currentProject.milestones || [];
+            const container = document.getElementById('milestonesContainer');
+
+            if (milestones.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">No milestones recorded.</p>';
+                return;
+            }
+
+            container.innerHTML = milestones.map(m => `
+                <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.85rem 1.25rem; background: ${m.completed ? '#f0fdf4' : '#fff'};">
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <input type="checkbox" ${m.completed ? 'checked' : ''} onchange="toggleMilestone(${m.id})" style="width: 20px; height: 20px; cursor: pointer;">
+                        <div>
+                            <strong style="font-size: 1rem; ${m.completed ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${m.title}</strong>
+                            <p style="font-size: 0.82rem; color: var(--text-muted);">${m.description || ''}</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right; font-size: 0.85rem;">
+                        <div>Target: <strong>${m.targetDeadline}</strong></div>
+                        <span class="badge badge-secondary">Weight: ${m.weightPercentage}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function toggleMilestone(id) {
+            try {
+                const res = await fetch(`/api/milestones/${id}/toggle`, { method: 'PUT' });
+                if (res.ok) {
+                    showToast('Milestone status updated');
+                    loadProject();
+                }
+            } catch (e) {
+                showToast('Error updating milestone', true);
+            }
+        }
+
+        function setupExportLinks() {
+            document.getElementById('downloadDossierBtn').href = `/api/reports/projects/${projectId}/dossier`;
+            document.getElementById('downloadTasksCsvBtn').href = `/api/reports/projects/${projectId}/tasks-csv`;
+            document.getElementById('downloadTeamCsvBtn').href = `/api/reports/projects/${projectId}/team-csv`;
+        }
+
+        // Modals
+        function openAddTaskModal() {
+            const select = document.getElementById('taskAssignee');
+            const members = currentProject.team ? currentProject.team.members : [];
+            select.innerHTML = members.map(m => `<option value="${m.student.id}">${m.student.name} (${m.roleInTeam})</option>`).join('');
+            document.getElementById('taskDeadline').value = currentProject.deadline;
+            document.getElementById('taskModal').style.display = 'flex';
+        }
+        function closeAddTaskModal() { document.getElementById('taskModal').style.display = 'none'; }
+
+        async function submitAddTask() {
+            const user = Auth.requireAuth();
+            const payload = {
+                title: document.getElementById('taskTitle').value.trim(),
+                description: document.getElementById('taskDesc').value.trim(),
+                assigneeId: parseInt(document.getElementById('taskAssignee').value),
+                priority: document.getElementById('taskPriority').value,
+                deadline: document.getElementById('taskDeadline').value
+            };
+            const res = await fetch(`/api/projects/${projectId}/tasks?authorId=${user.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                showToast('Task created');
+                closeAddTaskModal();
+                loadProject();
+            }
+        }
+
+        function openAddMilestoneModal() {
+            document.getElementById('milestoneDeadline').value = currentProject.deadline;
+            document.getElementById('milestoneModal').style.display = 'flex';
+        }
+        function closeAddMilestoneModal() { document.getElementById('milestoneModal').style.display = 'none'; }
+
+        async function submitAddMilestone() {
+            const payload = {
+                title: document.getElementById('milestoneTitle').value.trim(),
+                description: document.getElementById('milestoneDesc').value.trim(),
+                targetDeadline: document.getElementById('milestoneDeadline').value,
+                weightPercentage: parseFloat(document.getElementById('milestoneWeight').value)
+            };
+            const res = await fetch(`/api/projects/${projectId}/milestones`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                showToast('Milestone created');
+                closeAddMilestoneModal();
+                loadProject();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProject);
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Portal - CoVe</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">🎓 <span>CoVe</span> | Faculty Portal</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/projects.html">Browse Projects</a></li>
+            <li><a href="/faculty-dashboard.html" class="active">Faculty Portal</a></li>
+        </ul>
+        <div id="navUser" class="nav-user"></div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Faculty Mentor Dashboard</h1>
+                <p class="page-subtitle">Project evaluation, milestone verification, and academic team supervision.</p>
+            </div>
+            <div>
+                <button onclick="quickLogin('FACULTY')" class="btn btn-sm btn-secondary">Switch to Faculty Guide Demo</button>
+            </div>
+        </div>
+
+        <div class="card" style="background: #f8fafc; border-left: 4px solid var(--primary);">
+            <h3 style="font-size: 1.1rem; font-weight: 700;">Mentor Oversight: Dr. M. Ashwin (Associate Professor, CSE)</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+                Faculty mentors can review team submissions, verify milestone completions, and download full academic project dossiers.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">Supervised Capstone & Course Projects</h3>
+            <div id="mentorProjectsContainer">
+                <p style="color: var(--text-muted);">Loading supervised projects...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        async function loadFacultyProjects() {
+            try {
+                const res = await fetch('/api/projects');
+                const projects = await res.json();
+                const container = document.getElementById('mentorProjectsContainer');
+
+                if (projects.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-muted);">No projects available.</p>';
+                    return;
+                }
+
+                container.innerHTML = projects.map(p => `
+                    <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; background: #fff;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div>
+                                <h4 style="font-size: 1.2rem; font-weight: 700;">
+                                    <a href="/project-details.html?id=${p.id}" style="color: var(--primary); text-decoration: none;">${p.title}</a>
+                                </h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted);">
+                                    Lead: <strong>${p.owner.name} (${p.owner.registrationNumber})</strong> | Team Size: ${p.team ? p.team.members.length : 1}/${p.teamSizeLimit}
+                                </p>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="badge badge-${p.status}">${p.status}</span>
+                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Due: ${p.deadline}</div>
+                            </div>
+                        </div>
+
+                        <p style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 1rem;">${p.description}</p>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.75rem;">
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                Calculated Completion: <strong>${p.calculateProgressPercentage || 50}%</strong>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a href="/api/reports/projects/${p.id}/dossier" class="btn btn-sm btn-secondary" download>Download Dossier (TXT)</a>
+                                <a href="/project-details.html?id=${p.id}" class="btn btn-sm btn-primary">Open Workspace</a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadFacultyProjects);
+    </script>
+</body>
+</html>

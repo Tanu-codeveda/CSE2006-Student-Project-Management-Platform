@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Project - CoVe</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">🎓 <span>CoVe</span> | New Project</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/projects.html">Browse Projects</a></li>
+            <li><a href="/dashboard.html">My Dashboard</a></li>
+        </ul>
+        <div id="navUser" class="nav-user"></div>
+    </nav>
+
+    <div class="container" style="max-width: 780px;">
+        <div class="card">
+            <h2 class="card-title" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Propose Academic Project</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Define project scope, target deadlines, and required skills to enable the rule-based teammate matching engine.
+            </p>
+
+            <form id="createProjectForm">
+                <div class="form-group">
+                    <label for="title">Project Title</label>
+                    <input type="text" id="title" class="form-control" placeholder="e.g. Distributed Consensus Engine using Raft" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Project Description</label>
+                    <textarea id="description" class="form-control" rows="3" placeholder="Provide problem statement, methodology, expected deliverables..." required></textarea>
+                </div>
+
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label for="teamSizeLimit">Team Size Limit</label>
+                        <input type="number" id="teamSizeLimit" class="form-control" min="2" max="6" value="4" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="techStack">Technologies</label>
+                        <input type="text" id="techStack" class="form-control" placeholder="e.g. Java 17, Docker, SQL">
+                    </div>
+                    <div class="form-group">
+                        <label for="deadline">Final Evaluation Deadline</label>
+                        <input type="date" id="deadline" class="form-control" required>
+                    </div>
+                </div>
+
+                <!-- Required Skills Section -->
+                <div style="margin-top: 1.5rem; margin-bottom: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <h4 style="font-size: 1.05rem; font-weight: 700;">Required Skills for Teammate Matching</h4>
+                        <button type="button" onclick="addSkillRow()" class="btn btn-sm btn-secondary">+ Add Required Skill</button>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Specify skills and minimum proficiency levels to find complementary teammates.
+                    </p>
+
+                    <div id="skillsContainer" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Dynamic Rows -->
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <a href="/projects.html" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">Propose & Launch Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        let availableSkills = [];
+
+        async function initPage() {
+            const user = Auth.requireAuth();
+            if (!user) return;
+
+            // Set default date to 2 months in future
+            const d = new Date();
+            d.setMonth(d.getMonth() + 2);
+            document.getElementById('deadline').value = d.toISOString().split('T')[0];
+
+            try {
+                const res = await fetch('/api/skills');
+                availableSkills = await res.json();
+                addSkillRow('Java', 'INTERMEDIATE', 1.5);
+                addSkillRow('SQL', 'INTERMEDIATE', 1.2);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function addSkillRow(selectedSkill = '', selectedLevel = 'INTERMEDIATE', weight = 1.0) {
+            const container = document.getElementById('skillsContainer');
+            const row = document.createElement('div');
+            row.className = 'grid-3';
+            row.style.alignItems = 'center';
+
+            const skillOptions = availableSkills.map(s => `
+                <option value="${s.name}" ${s.name === selectedSkill ? 'selected' : ''}>${s.name}</option>
+            `).join('');
+
+            row.innerHTML = `
+                <div>
+                    <select class="form-control skill-select">${skillOptions}</select>
+                </div>
+                <div>
+                    <select class="form-control level-select">
+                        <option value="BEGINNER" ${selectedLevel === 'BEGINNER' ? 'selected' : ''}>BEGINNER</option>
+                        <option value="INTERMEDIATE" ${selectedLevel === 'INTERMEDIATE' ? 'selected' : ''}>INTERMEDIATE</option>
+                        <option value="ADVANCED" ${selectedLevel === 'ADVANCED' ? 'selected' : ''}>ADVANCED</option>
+                        <option value="EXPERT" ${selectedLevel === 'EXPERT' ? 'selected' : ''}>EXPERT</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="number" class="form-control weight-input" value="${weight}" step="0.1" min="0.5" max="3.0" title="Importance Weight">
+                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn btn-sm btn-danger">✕</button>
+                </div>
+            `;
+            container.appendChild(row);
+        }
+
+        document.getElementById('createProjectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = Auth.getUser();
+
+            const rows = document.querySelectorAll('#skillsContainer .grid-3');
+            const requiredSkills = [];
+            rows.forEach(r => {
+                const skillName = r.querySelector('.skill-select').value;
+                const minProficiency = r.querySelector('.level-select').value;
+                const weight = parseFloat(r.querySelector('.weight-input').value) || 1.0;
+                requiredSkills.push({ skillName, minProficiency, weight });
+            });
+
+            const payload = {
+                title: document.getElementById('title').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                teamSizeLimit: parseInt(document.getElementById('teamSizeLimit').value),
+                techStack: document.getElementById('techStack').value.trim(),
+                deadline: document.getElementById('deadline').value,
+                requiredSkills: requiredSkills
+            };
+
+            try {
+                const res = await fetch(`/api/projects?ownerId=${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Project created successfully!');
+                    setTimeout(() => window.location.href = `/project-details.html?id=${data.id}`, 600);
+                } else {
+                    showToast(data.message || 'Creation failed', true);
+                }
+            } catch (err) {
+                showToast('Network error', true);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
