@@ -1,0 +1,22 @@
+Name,Category,Description
+Java,PROGRAMMING,Object-oriented enterprise programming language
+C++,PROGRAMMING,High-performance systems programming language
+Python,PROGRAMMING,Versatile scripting and machine learning language
+JavaScript,WEB_DEVELOPMENT,Core language for client-side web scripting
+TypeScript,WEB_DEVELOPMENT,Typed superset of JavaScript for scalable web apps
+React,WEB_DEVELOPMENT,Component-based frontend UI library
+Spring Boot,BACKEND,Enterprise Java application framework
+Node.js,BACKEND,Asynchronous event-driven JavaScript runtime
+SQL,DATABASE,Structured Query Language for relational databases
+MongoDB,DATABASE,Document-oriented NoSQL database
+PostgreSQL,DATABASE,Advanced open-source relational database
+Cybersecurity,SECURITY,Information security network defense and penetration testing
+Cryptography,SECURITY,Mathematical encryption and secure protocol implementation
+Cloud Computing,CLOUD,Cloud architectures infrastructure and virtualization
+AWS,CLOUD,Amazon Web Services cloud computing platform
+Docker,DEVOPS,Containerization engine for microservice packaging
+Kubernetes,DEVOPS,Container orchestration and cluster management
+AI/ML,AI_ML,Artificial intelligence neural networks and predictive modeling
+Data Science,AI_ML,Statistical analysis data munging and visualization
+UI/UX Design,DESIGN,User interface wireframing prototyping and usability engineering
+Figma,DESIGN,Collaborative web-based vector interface design tool
